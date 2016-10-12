@@ -100,7 +100,7 @@ public class MainActivity extends Activity {
             Log.w("thomas", "ma 96 start server");
             androidWebServer = new AndroidWebServer(8900, this);
             androidWebServer.start();
-            android.util.Log.e("thomas", "ma99 server started");
+            android.util.Log.e("thomas", "ma99 server started on port 8900");
 
         } catch (IOException e) {
             e.printStackTrace();
