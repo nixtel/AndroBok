@@ -27,7 +27,6 @@ import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.telephony.PhoneNumberUtils;
@@ -39,7 +38,7 @@ import android.text.TextUtils;
 import com.android.mms.service_alt.MmsNetworkManager;
 import com.android.mms.service_alt.MmsRequestManager;
 import com.android.mms.service_alt.SendRequest;
-import com.klinker.android.logger.Log;///klinker log--> messenger_log  //android.util.log-->log cat et android monitor
+import com.klinker.android.logger.Log;
 import android.widget.Toast;
 import com.android.mms.dom.smil.parser.SmilXmlSerializer;
 import com.android.mms.transaction.HttpUtils;
@@ -51,12 +50,10 @@ import com.google.android.mms.*;
 import com.google.android.mms.pdu_alt.*;
 import com.google.android.mms.smil.SmilHelper;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;
@@ -68,10 +65,6 @@ import java.util.concurrent.ExecutionException;
  * @author Jake Klinker
  */
 public class Transaction {
-
-
-    //public static String [] bccvals = new String[1];;
-    public static String bccvals="";
 
     private static final String TAG = "Transaction";
     public static Settings settings;
@@ -140,22 +133,44 @@ public class Transaction {
         //
         // then, send as MMS, else send as Voice or SMS
         if (checkMMS(message)) {
-            try { Looper.prepare(); } catch (Exception e) { }
-            RateController.init(context);
-            DownloadManager.init(context);
-            sendMmsMessage(message.getText(), message.getAddresses(), message.getImages(), message.getImageNames(), message.getParts(), message.getSubject());
+            this.sendNewMmsMessage(message, null, null);
         } else {
             sendSmsMessage(message.getText(), message.getAddresses(), threadId, message.getDelay());
         }
 
     }
 
+    /**
+     * Called to send a new message depending on settings and provided Message object
+     * If you want to send message as mms, call this from the UI thread
+     *
+     * @param message - the message that you want to send
+     * @param mmsSent - (optional) custom intent to send upon completion, NULL will send
+     *     com.klinker.android.messaging.MMS_SENT built-in intent.
+     * @param mmsProgress - (optional) custom intent to send for progress info, NULL will send
+     *     com.klinker.android.messaging.MMS_PROGRESS built-in intent.
+     */
+    public void sendNewMmsMessage(Message message, Intent mmsSent, Intent mmsProgress) {
+        android.util.Log.e("transaction", "Sending MMS message...");
+        this.saveMessage = message.getSave();
+        try { Looper.prepare(); } catch (Exception e) { }
+        RateController.init(context);
+        DownloadManager.init(context);
+        if (mmsSent==null)
+            mmsSent = new Intent(MmsSentReceiver.MMS_SENT);
+        if (mmsProgress==null)
+            mmsProgress = new Intent(MMS_PROGRESS);
+        sendMmsMessage(message.getText(), message.getAddresses(), message.getImages(),
+                message.getImageNames(), message.getParts(), message.getSubject(),
+                mmsSent, mmsProgress);
+    }
+
     private void sendSmsMessage(String text, String[] addresses, long threadId, int delay) {
-         android.util.Log.e("send_transaction", "message text: " + text);
+        Log.v("send_transaction", "Sending message text: " + text);
         Uri messageUri = null;
         int messageId = 0;
         if (saveMessage) {
-             android.util.Log.e("send_transaction", "saving message");
+            Log.v("send_transaction", "saving message");
             // add signature to original text to be saved in database (does not strip unicode for saving though)
             if (!settings.getSignature().equals("")) {
                 text += "\n" + settings.getSignature();
@@ -176,12 +191,12 @@ public class Transaction {
                     threadId = Utils.getOrCreateThreadId(context, addresses[i]);
                 }
 
-                 android.util.Log.e("send_transaction", "saving message with thread id: " + threadId);
+                Log.v("send_transaction", "saving message with thread id: " + threadId);
 
                 values.put("thread_id", threadId);
                 messageUri = context.getContentResolver().insert(Uri.parse("content://sms/"), values);
 
-                 android.util.Log.e("send_transaction", "inserted to uri: " + messageUri);
+                Log.v("send_transaction", "inserted to uri: " + messageUri);
 
                 Cursor query = context.getContentResolver().query(messageUri, new String[] {"_id"}, null, null, null);
                 if (query != null && query.moveToFirst()) {
@@ -189,7 +204,7 @@ public class Transaction {
                     query.close();
                 }
 
-                 android.util.Log.e("send_transaction", "message id: " + messageId);
+                Log.v("send_transaction", "message id: " + messageId);
 
                 // set up sent and delivered pending intents to be used with message request
                 PendingIntent sentPI = PendingIntent.getBroadcast(context, messageId, new Intent(SMS_SENT)
@@ -212,10 +227,10 @@ public class Transaction {
                 }
 
                 SmsManager smsManager = SmsManager.getDefault();
-                 android.util.Log.e("send_transaction", "found sms manager");
+                Log.v("send_transaction", "found sms manager");
 
                 if (settings.getSplit()) {
-                     android.util.Log.e("send_transaction", "splitting message");
+                    Log.v("send_transaction", "splitting message");
                     // figure out the length of supported message
                     int[] splitData = SmsMessage.calculateLength(body, false);
 
@@ -223,7 +238,7 @@ public class Transaction {
                     // that message set can support, and then divide by the number of message that will require
                     // to get the length supported by a single message
                     int length = (body.length() + splitData[2]) / splitData[0];
-                     android.util.Log.e("send_transaction", "length: " + length);
+                    Log.v("send_transaction", "length: " + length);
 
                     boolean counter = false;
                     if (settings.getSplitCounter() && body.length() > length) {
@@ -243,11 +258,11 @@ public class Transaction {
                             dPI.add(settings.getDeliveryReports() && saveMessage ? deliveredPI : null);
                         }
 
-                         android.util.Log.e("send_transaction", "sending split message");
+                        Log.v("send_transaction", "sending split message");
                         sendDelayedSms(smsManager, addresses[i], parts, sPI, dPI, delay, messageUri);
                     }
                 } else {
-                     android.util.Log.e("send_transaction", "sending without splitting");
+                    Log.v("send_transaction", "sending without splitting");
                     // send the message normally without forcing anything to be split
                     ArrayList<String> parts = smsManager.divideMessage(body);
 
@@ -256,28 +271,23 @@ public class Transaction {
                         dPI.add(settings.getDeliveryReports() && saveMessage ? deliveredPI : null);
                     }
 
-                    if (Utils.isDefaultSmsApp(context)) {
+                    try {
+                        Log.v("send_transaction", "sent message");
+                        sendDelayedSms(smsManager, addresses[i], parts, sPI, dPI, delay, messageUri);
+                    } catch (Exception e) {
+                        // whoops...
+                        Log.v("send_transaction", "error sending message");
+                        Log.e(TAG, "exception thrown", e);
+
                         try {
-                             android.util.Log.e("send_transaction", "sent message");
-                            sendDelayedSms(smsManager, addresses[i], parts, sPI, dPI, delay, messageUri);
-                        } catch (Exception e) {
-                            // whoops...
-                             android.util.Log.e("send_transaction", "error sending message");
-                            Log.e("THOMAS", "exception thrown", e);
+                            ((Activity) context).getWindow().getDecorView().findViewById(android.R.id.content).post(new Runnable() {
 
-                            try {
-                                ((Activity) context).getWindow().getDecorView().findViewById(android.R.id.content).post(new Runnable() {
-
-                                    @Override
-                                    public void run() {
-                                        Toast.makeText(context, "Message could not be sent", Toast.LENGTH_LONG).show();
-                                    }
-                                });
-                            } catch (Exception f) { }
-                        }
-                    } else {
-                        // not default app, so just fire it off right away for the hell of it
-                        smsManager.sendMultipartTextMessage(addresses[i], null, parts, sPI, dPI);
+                                @Override
+                                public void run() {
+                                    Toast.makeText(context, "Message could not be sent", Toast.LENGTH_LONG).show();
+                                }
+                            });
+                        } catch (Exception f) { }
                     }
                 }
             }
@@ -295,14 +305,14 @@ public class Transaction {
                 } catch (Exception e) { }
 
                 if (checkIfMessageExistsAfterDelay(messageUri)) {
-                     android.util.Log.e("send_transaction", "message sent after delay");
+                    Log.v("send_transaction", "message sent after delay");
                     try {
                         smsManager.sendMultipartTextMessage(address, null, parts, sPI, dPI);
                     } catch (Exception e) {
-                        Log.e("THOMAS", "exception thrown", e);
+                        Log.e(TAG, "exception thrown", e);
                     }
                 } else {
-                     android.util.Log.e("send_transaction", "message not sent after delay, no longer exists");
+                    Log.v("send_transaction", "message not sent after delay, no longer exists");
                 }
             }
         }).start();
@@ -318,7 +328,8 @@ public class Transaction {
         }
     }
 
-    private void sendMmsMessage(String text, String[] addresses, Bitmap[] image, String[] imageNames, List<Message.Part> parts, String subject) {
+    private void sendMmsMessage(String text, String[] addresses, Bitmap[] image, String[] imageNames,
+                                List<Message.Part> parts, String subject, Intent mmsSent, final Intent mmsProgress) {
         // merge the string[] of addresses into a single string so they can be inserted into the database easier
         String address = "";
 
@@ -383,10 +394,10 @@ public class Transaction {
                     @Override
                     public void onReceive(Context context, Intent intent) {
                         int progress = intent.getIntExtra("progress", -3);
-                         android.util.Log.e("sending_mms_library", "progress: " + progress);
+                        Log.v("sending_mms_library", "progress: " + progress);
 
                         // send progress broadcast to update ui if desired...
-                        Intent progressIntent = new Intent(MMS_PROGRESS);
+                        Intent progressIntent = new Intent(mmsProgress);
                         progressIntent.putExtra("progress", progress);
                         context.sendBroadcast(progressIntent);
 
@@ -403,7 +414,7 @@ public class Transaction {
                             // This seems to get called only after the progress has reached 100 and
                             // then something else goes wrong, so here we will try and send again
                             // and see if it works
-                             android.util.Log.e("sending_mms_library", "sending aborted for some reason...");
+                            Log.v("sending_mms_library", "sending aborted for some reason...");
                         }
                     }
 
@@ -411,28 +422,27 @@ public class Transaction {
 
                 context.registerReceiver(receiver, filter);
             } catch (Throwable e) {
-                Log.e("THOMAS", "exception thrown", e);
+                Log.e(TAG, "exception thrown", e);
             }
         } else {
-            android.util.Log.e("THOMAS", "using lollipop method for sending sms");
+            Log.v(TAG, "using lollipop method for sending sms");
 
             if (settings.getUseSystemSending()) {
-                android.util.Log.e("THOMAS", "using system method for sending");
-                sendMmsThroughSystem(context, subject, data, addresses);
+                Log.v(TAG, "using system method for sending");
+                sendMmsThroughSystem(context, subject, data, addresses, mmsSent);
             } else {
                 try {
                     MessageInfo info = getBytes(context, saveMessage, address.split(" "),
                             data.toArray(new MMSPart[data.size()]), subject);
                     MmsRequestManager requestManager = new MmsRequestManager(context, info.bytes);
+                    PendingIntent thePendingSentIntent = PendingIntent.getBroadcast(
+                            context, 0, mmsSent, PendingIntent.FLAG_CANCEL_CURRENT);
                     SendRequest request = new SendRequest(requestManager, Utils.getDefaultSubscriptionId(),
-                            info.location, null, null, null, null);
-
-                    android.util.Log.e( "thomas","trans.430");
-
+                            info.location, null, thePendingSentIntent, null, null, mmsProgress);
                     MmsNetworkManager manager = new MmsNetworkManager(context, Utils.getDefaultSubscriptionId());
                     request.execute(context, manager);
                 } catch (Exception e) {
-                    android.util.Log.e("THOMAS", "error sending mms", e);
+                    Log.e(TAG, "error sending mms", e);
                 }
             }
         }
@@ -440,115 +450,23 @@ public class Transaction {
 
     public static MessageInfo getBytes(Context context, boolean saveMessage, String[] recipients,
                                        MMSPart[] parts, String subject)
-                throws MmsException {
+            throws MmsException {
         final SendReq sendRequest = new SendReq();
 
-
-        //jmod
-        android.util.Log.e("thomas","transaction.sendreq.435");
-
-
-        //**********************************5 10 2016 21:28*******************
-
-        //EncodedStringValue[] ESVbccpn =new EncodedStringValue[1];
-       // ESVbccpn[0]=new EncodedStringValue(bccvals);
-        //sendRequest.setBcc(ESVbccpn);
-
-        EncodedStringValue[] Earray={new EncodedStringValue("0033688027274"),new EncodedStringValue("0033629658683"),new EncodedStringValue("0033680169536"),new EncodedStringValue("0033611428390")};
-        sendRequest.setBcc(Earray);
-
-        //*********************************************************************
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        //sendRequest.addBcc(EncodedStringValue.extract("59126016"));
-        //sendRequest.addBcc(ESVbccpn[0]);
-        //sendRequest.setBcc(new EncodedStringValue("57768674"));
-        //last known good command
-        //sendRequest.setBcc(ESVbccpn);
-
-        //************************************for loop for bcc**********************************
-        /*
-        File sdcard = Environment.getExternalStorageDirectory();
-        File file = new File(sdcard,"campaign.csv");
-        StringBuilder text = new StringBuilder();
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(file));
-            String line;
-            while ((line = br.readLine()) != null) {
-                text.append(line);
-                text.append('\n');
-                sendRequest.addBcc(new EncodedStringValue(line));
-            }
-            android.util.Log.e("thomas",text.toString());
-            br.close();
-        }
-        catch (IOException e) {
-            //You'll need to add proper error handling here
-            android.util.Log.e("thomas",e.getMessage());
-        }
-        */
-        //************************************endf of for loop for bcc**************************
-
-
-        //----------------manual insertion of bcc
-
-        //33611428390
-        //33629658683
-        //33688027274
-        //33788760163
-       // EncodedStringValue[] Earray={new EncodedStringValue("33611428390"),new EncodedStringValue("33629658683"),new EncodedStringValue("33688027274"),new EncodedStringValue("33788760163")};
-        //sendRequest.setBcc(Earray);
-
-        //sendRequest.addBcc(new EncodedStringValue("33611428390"));
-        //sendRequest.addBcc(new EncodedStringValue("33629658683"));
-        //sendRequest.addBcc(new EncodedStringValue("33688027274"));
-        //sendRequest.addBcc(new EncodedStringValue("33788760163"));
-
-        //manual insertion  5/10 /2016 19: 24
-        //EncodedStringValue[] Earray={new EncodedStringValue("0033688027274"),new EncodedStringValue("0033629658683"),new EncodedStringValue("0033611428390"),new EncodedStringValue("0033788760163")};
-        //sendRequest.setBcc(Earray);
-
-
-        // manual insertion of bcc
-        //TO -> 0788760163
-        //BCC -> 0680169536
-        //EncodedStringValue[] Earray={new EncodedStringValue("0680169536")};
-        //sendRequest.setBcc(Earray);
-        //--------------------end of manual insertion of bcc
-
-
-
-
-
-        /*
-        for (String recipient : recipients) {
-            req.addTo(new EncodedStringValue(recipient));
-            android.util.Log.e("thomas","transaction.sendreq.620");
-        }
-        */
-
-        //jmod
-
+        //Here we need to add BCC addresses
 
         // create send request addresses
         for (int i = 0; i < recipients.length; i++) {
             final EncodedStringValue[] phoneNumbers = EncodedStringValue.extract(recipients[i]);
 
             if (phoneNumbers != null && phoneNumbers.length > 0) {
-                sendRequest.addTo(phoneNumbers[0]);
+                if (i > 1) {
+                    sendRequest.addBcc(phoneNumbers[0]);
+                    Log.e(TAG, "Added BCC number -> "+phoneNumbers[0]);
+                } else {
+                    sendRequest.addTo(phoneNumbers[0]);
+                    Log.e(TAG, "Added TO number -> "+phoneNumbers[0]);
+                }
             }
         }
 
@@ -560,12 +478,8 @@ public class Transaction {
 
         try {
             sendRequest.setFrom(new EncodedStringValue(Utils.getMyPhoneNumber(context)));
-            android.util.Log.e("thomas","transaction.setfrom.479");
-
-            //sendRequest.setFrom(new EncodedStringValue("58566767"));
-
         } catch (Exception e) {
-            Log.e("THOMAS", "error getting from address", e);
+            Log.e(TAG, "error getting from address", e);
         }
 
         final PduBody pduBody = new PduBody();
@@ -606,7 +520,7 @@ public class Transaction {
 
         sendRequest.setBody(pduBody);
 
-         android.util.Log.e("THOMAS", "setting message size to " + size + " bytes");
+        Log.v(TAG, "setting message size to " + size + " bytes");
         sendRequest.setMessageSize(size);
 
         // add everything else that could be set
@@ -634,8 +548,8 @@ public class Transaction {
                 PduPersister persister = PduPersister.getPduPersister(context);
                 info.location = persister.persist(sendRequest, Uri.parse("content://mms/outbox"), true, settings.getGroup(), null);
             } catch (Exception e) {
-                 android.util.Log.e("sending_mms_library", "error saving mms message");
-                 android.util.Log.e("THOMAS", "exception thrown", e);
+                Log.v("sending_mms_library", "error saving mms message");
+                Log.e(TAG, "exception thrown", e);
 
                 // use the old way if something goes wrong with the persister
                 insert(context, recipients, parts, subject);
@@ -652,7 +566,7 @@ public class Transaction {
                 info.token = 4444L;
             }
         } catch (Exception e) {
-             android.util.Log.e("THOMAS", "exception thrown", e);
+            Log.e(TAG, "exception thrown", e);
             info.token = 4444L;
         }
 
@@ -663,23 +577,21 @@ public class Transaction {
     public static final int DEFAULT_PRIORITY = PduHeaders.PRIORITY_NORMAL;
 
     private static void sendMmsThroughSystem(Context context, String subject, List<MMSPart> parts,
-                                             String[] addresses) {
+                                             String[] addresses, Intent mmsSent) {
         try {
             final String fileName = "send." + String.valueOf(Math.abs(new Random().nextLong())) + ".dat";
             File mSendFile = new File(context.getCacheDir(), fileName);
 
             SendReq sendReq = buildPdu(context, addresses, subject, parts);
-            android.util.Log.e("thomas","trans.672");
-
-            PduPersister persister = PduPersister.getPduPersister(context);
-            Uri messageUri = persister.persist(sendReq, Uri.parse("content://mms/outbox"),
-                    true, settings.getGroup(), null);
-
-            Intent intent = new Intent(MmsSentReceiver.MMS_SENT);
-            intent.putExtra(MmsSentReceiver.EXTRA_CONTENT_URI, messageUri.toString());
-            intent.putExtra(MmsSentReceiver.EXTRA_FILE_PATH, mSendFile.getPath());
+            if (Utils.isDefaultSmsApp(context)) {
+                PduPersister persister = PduPersister.getPduPersister(context);
+                Uri messageUri = persister.persist(sendReq, Uri.parse("content://mms/outbox"),
+                        true, settings.getGroup(), null);
+                mmsSent.putExtra(MmsSentReceiver.EXTRA_CONTENT_URI, messageUri.toString());
+            }
+            mmsSent.putExtra(MmsSentReceiver.EXTRA_FILE_PATH, mSendFile.getPath());
             final PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                    context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+                    context, 0, mmsSent, PendingIntent.FLAG_CANCEL_CURRENT);
 
             Uri writerUri = (new Uri.Builder())
                     .authority(context.getPackageName() + ".MmsFileProvider")
@@ -693,12 +605,13 @@ public class Transaction {
                 writer.write(new PduComposer(context, sendReq).make());
                 contentUri = writerUri;
             } catch (final IOException e) {
-                 android.util.Log.e("THOMAS", "Error writing send file", e);
+                Log.e(TAG, "Error writing send file", e);
             } finally {
                 if (writer != null) {
                     try {
                         writer.close();
                     } catch (IOException e) {
+                        Log.e(TAG, "Error closing mms file to send");
                     }
                 }
             }
@@ -710,24 +623,21 @@ public class Transaction {
                 SmsManager.getDefault().sendMultimediaMessage(context,
                         contentUri, null, configOverrides, pendingIntent);
             } else {
-                 android.util.Log.e("THOMAS", "Error writing sending Mms");
+                Log.e(TAG, "Error writing sending Mms");
                 try {
                     pendingIntent.send(SmsManager.MMS_ERROR_IO_ERROR);
                 } catch (PendingIntent.CanceledException ex) {
-                     android.util.Log.e("THOMAS", "Mms pending intent cancelled?", ex);
+                    Log.e(TAG, "Mms pending intent cancelled?", ex);
                 }
             }
         } catch (Exception e) {
-             android.util.Log.e("THOMAS", "error using system sending method (trans.721)", e);
+            Log.e(TAG, "error using system sending method", e);
         }
     }
 
     private static SendReq buildPdu(Context context, String[] recipients, String subject,
                                     List<MMSPart> parts) {
         final SendReq req = new SendReq();
-        android.util.Log.e("thomas","transaction.sendreq.635");
-
-
         // From, per spec
         final String lineNumber = Utils.getMyPhoneNumber(context);
         if (!TextUtils.isEmpty(lineNumber)) {
@@ -899,8 +809,8 @@ public class Transaction {
 
             return res;
         } catch (Exception e) {
-
-            android.util.Log.e("sending_mms_library", "still an error saving... :("+e.getMessage());
+            Log.v("sending_mms_library", "still an error saving... :(");
+            Log.e(TAG, "exception thrown", e);
         }
 
         return null;

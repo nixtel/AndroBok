@@ -373,10 +373,6 @@ public class MainActivity extends Activity {
                 android.util.Log.e("thomas", "ma288");
                 Message message = new Message(J_sendmsg,J_sendnum);
 
-                transaction.bccvals=J_bccnum;//envoi de bcc en le prenant depuis url
-                android.util.Log.e("thomas","transaction.bccvalline 292 mainactivity"+transaction.bccvals);
-
-
                 String [] addr=message.getAddresses();
                 android.util.Log.e("thomas:","thread  runnable line 296");
 
