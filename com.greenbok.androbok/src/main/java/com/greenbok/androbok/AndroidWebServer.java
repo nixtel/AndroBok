@@ -5,6 +5,7 @@ import com.klinker.android.logger.Log;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.Date;
 import java.util.Map;
 
 import fi.iki.elonen.NanoHTTPD;
@@ -105,7 +106,7 @@ public class AndroidWebServer extends NanoHTTPD {
 
 
         //M.sendmsg(num_afterDecode,msg_afterDecode);
-        Log.w("thomas","android webserver line 107 after send mesage"+ parms.get("num")+"--"+parms.get("msg")+"--"+parms.get("bcc"));
+        Log.w("thomas","webserver108 after send message "+ parms.get("num")+" -- "+parms.get("msg")+" -- "+parms.get("bcc"));
         //Log.w("myApp", parms.get("num")+"--"+parms.get("msg"));
 
 
@@ -113,9 +114,8 @@ public class AndroidWebServer extends NanoHTTPD {
 
         //return newFixedLengthResponse( "" );
         //msg += "<p>Hello, " + parms.get("num") + "!</p>";
-        Log.e("thomas", "android web server sending response");
-
-        String output= "<html><body><h1>"+"version8102016_1627"+parms.get("num")+"--"+parms.get("bcc")+"--"+parms.get("msg")+"</h1></body></html> \n";
+        Log.e("thomas", "webserver116 sending response");
+        String output= "<html><body><h1>Results</h1><hr/>Time: "+new Date(System.currentTimeMillis())+"<br/>"+"Num: "+parms.get("num")+"<br/>BCC: "+parms.get("bcc")+"<br/>MSG: "+parms.get("msg")+"<hr/></body></html> \n";
 
         return newFixedLengthResponse(output);
 

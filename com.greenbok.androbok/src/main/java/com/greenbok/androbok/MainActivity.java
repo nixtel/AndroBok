@@ -151,7 +151,7 @@ public class MainActivity extends Activity {
     }
 
     private void initViews() {
-        android.util.Log.e("thomas", "test message");
+        android.util.Log.e("thomas", "Init views...");
 
         setDefaultAppButton = (Button) findViewById(R.id.set_as_default);
         selectApns = (Button) findViewById(R.id.apns);
@@ -220,7 +220,7 @@ public class MainActivity extends Activity {
     }
 
     private void setDefaultSmsApp() {
-        Log.e("thomas", "test messag2e");
+        Log.e("thomas", "Set default SMS app...");
 
         setDefaultAppButton.setVisibility(View.GONE);
         Intent intent =
@@ -319,11 +319,11 @@ public class MainActivity extends Activity {
 
 
     public void sendMessage() {
-        android.util.Log.e("thomas", "ma240");
+        android.util.Log.e("thomas", "ma322 Send message...");
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !android.provider.Settings.System.canWrite(this)) {
 
-            android.util.Log.e("thomas", "ma243");
+            android.util.Log.e("thomas", "ma326 API > 23 detected...");
             new AlertDialog.Builder(this)
                     .setMessage(com.klinker.android.send_message.R.string.write_settings_permission)
                     .setPositiveButton(com.klinker.android.send_message.R.string.ok, new DialogInterface.OnClickListener() {
@@ -334,11 +334,11 @@ public class MainActivity extends Activity {
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
                             try {
-                                android.util.Log.e("thomas", "ma254");
+                                android.util.Log.e("thomas", "ma337 Starting activity...");
                                 startActivity(intent);
-                                android.util.Log.e("thomas", "ma256");
+                                android.util.Log.e("thomas", "ma339 Activity started...");
                             } catch (Exception e) {
-                                Log.e("thomas", "ma258"+ e.getMessage());
+                                Log.e("thomas", "ma341 Activity error : "+ e.getMessage());
 
                             }
                         }
