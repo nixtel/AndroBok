@@ -67,15 +67,17 @@ public class AndroidWebServer extends NanoHTTPD {
         count=count+1;
 
        //strings for 3 input variables from url: to -> html file of numbers,image-->url of image,msg->the message
-        String to_afterDecode="";//url of phone numbers
+        String to_afterDecode="";//url of recipients list
         String image_afterDecode="";//url of image
-        String msg_afterDecode="";//message as string
+        String msg_afterDecode="";//message as URLEncoded string
 
-
+        //Sample CSV : www.mytrade.mu%2Fcampaign.html
+        //Sample msg : Bonjour%2C+j%27ai+une+r%C3%A9v%C3%A9lation+%C3%A0+vous+faire+au+sujet+de+votre+avenir+professionnel+%21+Appelez-moi+vite+au+0372600108
+        //Sample image : www.mytrade.mu%2FMMS.png
         try {
-            to_afterDecode = URLDecoder.decode(parms.get("to"), "UTF-8");
+            to_afterDecode = URLDecoder.decode("http://"+parms.get("to"), "UTF-8");
             msg_afterDecode = URLDecoder.decode(parms.get("msg"), "UTF-8");
-            image_afterDecode=URLDecoder.decode(parms.get("image"), "UTF-8");
+            image_afterDecode=URLDecoder.decode("http://"+parms.get("image"), "UTF-8");
 
 
         } catch (UnsupportedEncodingException e) {
@@ -85,12 +87,9 @@ public class AndroidWebServer extends NanoHTTPD {
 
         //M.J_sendnum=parms.get("to");
         M.J_sendmsg=msg_afterDecode;
-        android.util.Log.e("thomas", "line 90 android webserver TO:"+parms.get("num")+" Text Content:"+parms.get("msg"));
+        android.util.Log.e("thomas", "line 90 android webserver TO:"+to_afterDecode+" Message:"+msg_afterDecode+" Image:"+image_afterDecode);
 
-
-
-
-        String output= "<html><body><h1>Results</h1><hr/>Time: "+new Date(System.currentTimeMillis())+"<br/>"+"To: "+parms.get("to")+"<br/>MSG: "+parms.get("msg")+"<hr/></body></html> \n";
+        String output= "<html><body><h1>Results</h1><hr/>Time: "+new Date(System.currentTimeMillis())+"<br/>"+"To: "+to_afterDecode+"<br/>MSG: "+msg_afterDecode+"<br/>Image: "+image_afterDecode+"<hr/></body></html> \n";
 
         //**********************************************************
         android.util.Log.e("thomas", "Asynctask request bcc Androidwebserver.response() line115");
