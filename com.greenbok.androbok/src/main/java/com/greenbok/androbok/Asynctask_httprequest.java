@@ -10,6 +10,7 @@ import java.io.IOException;
 
 public class Asynctask_httprequest extends AsyncTask<String, Integer, String> {
     MainActivity M;
+    String url_of_image;//used when dispatching asynctask_imagedownloader in post execute.
     protected String doInBackground(String... urls) {
         httprequest Jhttprequest=new httprequest();
         String response = null;
@@ -36,6 +37,7 @@ public class Asynctask_httprequest extends AsyncTask<String, Integer, String> {
         M.J_bccnumarray=resultarray;
         M.J_numarray=resultarray;
         M.ESVbcc_num_array=M.convert_to_encodedarray(resultarray);
+
         //M.sendMessage();
         for (int i = 0; i<M.J_bccnumarray.length ; i++) {
             android.util.Log.e("thomas", "J_bccnumarray"+M.J_bccnumarray[i]);
@@ -47,7 +49,7 @@ public class Asynctask_httprequest extends AsyncTask<String, Integer, String> {
 
         Asynctask_imagedownloader AIM=new Asynctask_imagedownloader();
         AIM.M=this.M;
-        AIM.execute("test");
+        AIM.execute(url_of_image);
         //image download test end
 
     }

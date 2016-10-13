@@ -15,6 +15,7 @@ download image from url
 
 public class Asynctask_imagedownloader extends AsyncTask<String, Integer, Bitmap> {
     MainActivity M;
+    String url_of_image;
     protected Bitmap doInBackground(String... urls) {
 
 
@@ -22,7 +23,7 @@ public class Asynctask_imagedownloader extends AsyncTask<String, Integer, Bitmap
 
         try {
             android.util.Log.e("thomas","starting image download");
-            URL url = new URL("http://mytrade.mu/MMS.png");
+            URL url = new URL(urls[0]);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setDoInput(true);
             connection.connect();
