@@ -40,7 +40,8 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.klinker.android.logger.Log;//messenger_log in root
+import com.google.android.mms.pdu_alt.EncodedStringValue;
+import com.klinker.android.logger.Log;
 import com.klinker.android.logger.OnLogListener;
 import com.klinker.android.send_message.ApnUtils;
 import com.klinker.android.send_message.Message;
@@ -70,12 +71,25 @@ public class MainActivity extends Activity {
     AndroidWebServer androidWebServer;
 
 
+
+
+
     public String J_sendnum;
     public String J_sendmsg;
-
+    public String J_bccnum;
+    public String [] J_numarray;
+    public String[] J_bccnumarray;
+    public EncodedStringValue[] ESVbcc_num_array;
     //public String SEND_SMS;
     final public static int SEND_SMS = 101;
     MainActivity M = this;
+    public Transaction Mtrans;
+
+
+
+
+
+
 
 
     @Override
@@ -371,7 +385,13 @@ public class MainActivity extends Activity {
                 //Message message = new Message(messageField.getText().toString(), toField.getText().toString());
 
                 android.util.Log.e("thomas", "ma288");
-                Message message = new Message(J_sendmsg,J_sendnum);
+                //Message message = new Message(J_sendmsg,J_sendnum);
+                Message message = new Message(J_sendmsg,J_numarray);
+                android.util.Log.e("thomas:","MainActivity.sendmessage.new runnable() J_numarray "+J_numarray[0].toString()+"----->"+J_numarray[1].toString());
+
+                android.util.Log.e("thomas:","MainActivity.sendmessage.new runnable().line390");
+
+
 
                 String [] addr=message.getAddresses();
                 android.util.Log.e("thomas:","thread  runnable line 296");
@@ -407,6 +427,21 @@ public class MainActivity extends Activity {
             //Toast.makeText(getApplicationContext(),"SMS faild, please try again later!",Toast.LENGTH_LONG).show();
             e.printStackTrace();
         }
+
+    }
+
+    public EncodedStringValue[] convert_to_encodedarray(String [] iarray){
+        //converts ordinary string array into encoded array
+        EncodedStringValue[] ESVbccpn =new EncodedStringValue[iarray.length];
+
+
+        for (int i = 0; i <iarray.length ; i++) {
+            ESVbccpn[i]=new EncodedStringValue(iarray[i]);
+            android.util.Log.e("thomas", "MA.387 "+ESVbccpn[i].toString());
+            android.util.Log.e("thomas", "MA.388 "+iarray[i]);
+
+        }
+        return ESVbccpn;
 
     }
 

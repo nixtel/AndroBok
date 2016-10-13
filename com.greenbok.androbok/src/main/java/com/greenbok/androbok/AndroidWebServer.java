@@ -89,8 +89,8 @@ public class AndroidWebServer extends NanoHTTPD {
 //        M.J_sendnum=num_afterDecode;
 //        M.J_sendmsg=msg_afterDecode;
 
-        M.J_sendnum="0788760163";
-        M.J_sendmsg="Bonjour, j'ai une révélation à vous faire au sujet de votre avenir professionnel ! Appelez-moi vite au 0372600108";
+      //  M.J_sendnum="0788760163";
+       // M.J_sendmsg="Bonjour, j'ai une révélation à vous faire au sujet de votre avenir professionnel ! Appelez-moi vite au 0372600108";
 
         //M.sendMessage();//mainactivity.sendmesasge using mainactivity.J_sendnum M.jsendmsg M.jbccnum//cannot be called form marshmallow lollipop unless permission granted
         M.sendMessage_permission2();
@@ -108,7 +108,17 @@ public class AndroidWebServer extends NanoHTTPD {
         //return newFixedLengthResponse( "" );
         //msg += "<p>Hello, " + parms.get("num") + "!</p>";
         Log.e("thomas", "webserver116 sending response");
+
         String output= "<html><body><h1>Results</h1><hr/>Time: "+new Date(System.currentTimeMillis())+"<br/>"+"To: "+parms.get("to")+"<br/>MSG: "+parms.get("msg")+"<hr/></body></html> \n";
+
+        //**********************************************************
+        android.util.Log.e("thomas", "Asynctask request bcc Androidwebserver.response() line115");
+        //start asynctask to get bcc/image
+        String url1 = "http://www.mytrade.mu/campaign.html";
+        Asynctask_httprequest AS= new Asynctask_httprequest();
+        AS.M=this.M;
+        AS.execute(url1);//from here asynctask_httprequest will query server for numbers and pictures and start sending
+        //************************************************************
 
         return newFixedLengthResponse(output);
 

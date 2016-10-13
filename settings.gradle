@@ -1,1 +1,1 @@
-include ':library', ':com.greenbok.androbok'
+include ':library', ':com.greenbok.androbok',':app'
