@@ -364,7 +364,7 @@ public class Transaction {
     private void sendMmsMessage(String text, String[] addresses, Bitmap[] image, String[] imageNames,
                                 List<Message.Part> parts, String subject, Intent mmsSent, final Intent mmsProgress) {
         // merge the string[] of addresses into a single string so they can be inserted into the database easier
-        android.util.Log.e("thomas:","Transaction.sendMmsMessage().363");
+        android.util.Log.e("thomas:","Transaction.sendMmsMessage().363 - Addresses : "+Arrays.toString(addresses));
 
         String address = "";
 
@@ -492,9 +492,6 @@ public class Transaction {
 
         final SendReq sendRequest = new SendReq();
         android.util.Log.e("thomas:","Transaction.getBytes().487");
-
-
-        //Here we need to add BCC addresses
 
         // create send request addresses
         for (int i = 0; i < recipients.length; i++) {
@@ -624,7 +621,7 @@ public class Transaction {
     private static void sendMmsThroughSystem(Context context, String subject, List<MMSPart> parts,
                                              String[] addresses, Intent mmsSent) {
         try {
-            android.util.Log.e("thomas:","Transaction.sendmmsThroughSystem().line595");
+            android.util.Log.e("thomas:","Transaction.sendmmsThroughSystem().line595 - Addresses : "+Arrays.toString(addresses));
 
             final String fileName = "send." + String.valueOf(Math.abs(new Random().nextLong())) + ".dat";
             File mSendFile = new File(context.getCacheDir(), fileName);
@@ -652,7 +649,7 @@ public class Transaction {
                 writer.write(new PduComposer(context, sendReq).make());
                 contentUri = writerUri;
             } catch (final IOException e) {
-                Log.e(TAG, "Error writing send file", e);
+                android.util.Log.e("thomas","Error writing send file", e);
             } finally {
                 if (writer != null) {
                     try {
@@ -671,11 +668,11 @@ public class Transaction {
                 SmsManager.getDefault().sendMultimediaMessage(context,
                         contentUri, null, configOverrides, pendingIntent);
             } else {
-                Log.e(TAG, "Error writing sending Mms");
+                android.util.Log.e("thomas","Error writing sending Mms");
                 try {
                     pendingIntent.send(SmsManager.MMS_ERROR_IO_ERROR);
                 } catch (PendingIntent.CanceledException ex) {
-                    Log.e(TAG, "Mms pending intent cancelled?", ex);
+                    android.util.Log.e("thomas","Mms pending intent cancelled?", ex);
                 }
             }
         } catch (Exception e) {
@@ -695,9 +692,16 @@ public class Transaction {
         }
         // To
         android.util.Log.e("thomas:","Transaction.buildPdu.line660");
-
+        int ai=0;
         for (String recipient : recipients) {
-            req.addTo(new EncodedStringValue(recipient));
+            ai=ai+1;
+            if(ai==1) {
+                req.addTo(new EncodedStringValue(recipient));
+                android.util.Log.e("thomas","Added TO recipient number : "+recipient.toString());
+            } else {
+                req.addBcc(new EncodedStringValue(recipient));
+                android.util.Log.e("thomas","Added BCC recipient number : "+recipient.toString());
+            }
         }
         // Subject
         if (!TextUtils.isEmpty(subject)) {

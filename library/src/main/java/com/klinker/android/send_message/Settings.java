@@ -369,8 +369,8 @@ public class Settings {
      */
     public void setUseSystemSending(boolean useSystemSending) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            //this.useSystemSending = useSystemSending;
-            this.useSystemSending = false;
+            this.useSystemSending = useSystemSending;
+            //this.useSystemSending = false;
         } else {
             this.useSystemSending = false;
             Log.e("Settings", "System sending only available on Lollipop+ devices");
