@@ -22,7 +22,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.BitmapFactory;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -84,6 +84,7 @@ public class MainActivity extends Activity {
     final public static int SEND_SMS = 101;
     MainActivity M = this;
     public Transaction Mtrans;
+    Bitmap downloaded_image;
 
 
 
@@ -97,16 +98,7 @@ public class MainActivity extends Activity {
         android.util.Log.e("thomas", "ma75 oncreate");
         super.onCreate(savedInstanceState);
 
-        /*
-        httprequest Jhttprequest=new httprequest();
-        String response = null;
-        try {
-            response = Jhttprequest.run("https://raw.github.com/square/okhttp/master/README.md");
-            Log.w("http",response);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        */
+
 
 
         //System.out.println(response);
@@ -396,8 +388,11 @@ public class MainActivity extends Activity {
                 String [] addr=message.getAddresses();
                 android.util.Log.e("thomas:","thread  runnable line 296");
 
+                android.util.Log.e("thomas:","set image from url");
+
                 if (imageToSend.isEnabled()) {
-                    message.setImage(BitmapFactory.decodeResource(getResources(), R.drawable.ban));//orend l'image android2.jpg dans sample/res/drawable
+                   // message.setImage(BitmapFactory.decodeResource(getResources(), R.drawable.ban));//orend l'image android2.jpg dans sample/res/drawable
+                    message.setImage(downloaded_image);//new version with url
                 }
                 android.util.Log.e("thomas","mainactivity line 304 sending message");
 
