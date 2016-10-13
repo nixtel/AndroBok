@@ -40,6 +40,14 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.wifi.WifiManager;
+import android.text.format.Formatter;
+//import android.util.Log;
+import android.widget.TextView;
+
 import com.google.android.mms.pdu_alt.EncodedStringValue;
 import com.klinker.android.logger.Log;
 import com.klinker.android.logger.OnLogListener;
@@ -50,8 +58,9 @@ import com.klinker.android.send_message.Utils;
 
 import java.io.IOException;
 import java.util.ArrayList;
-
-//import android.util.Log;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.util.Enumeration;
 
 public class MainActivity extends Activity {
 
@@ -59,19 +68,17 @@ public class MainActivity extends Activity {
 
     private Button setDefaultAppButton;
     private Button selectApns;
-    private EditText fromField;
-    private EditText toField;
-    private EditText messageField;
-    private ImageView imageToSend;
     private Button sendButton;
     private RecyclerView log;
+
+    private Button CheckIp;
+    private TextView ShowIp;
+    private String IPaddress;
+    private Boolean IPValue;
 
     private LogAdapter logAdapter;
 
     AndroidWebServer androidWebServer;
-
-
-
 
 
     public String J_sendnum;
@@ -97,8 +104,6 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         android.util.Log.e("thomas", "ma75 oncreate");
         super.onCreate(savedInstanceState);
-
-
 
 
         //System.out.println(response);
@@ -161,12 +166,11 @@ public class MainActivity extends Activity {
 
         setDefaultAppButton = (Button) findViewById(R.id.set_as_default);
         selectApns = (Button) findViewById(R.id.apns);
-        fromField = (EditText) findViewById(R.id.from);
-        toField = (EditText) findViewById(R.id.to);
-        messageField = (EditText) findViewById(R.id.message);
-        imageToSend = (ImageView) findViewById(R.id.image);
         sendButton = (Button) findViewById(R.id.send);
         log = (RecyclerView) findViewById(R.id.log);
+
+        CheckIp = (Button) findViewById(R.id.checkip);
+        ShowIp = (TextView) findViewById(R.id.showip);
     }
 
     private void initActions() {
@@ -188,13 +192,11 @@ public class MainActivity extends Activity {
             }
         });
 
-        fromField.setText(Utils.getMyPhoneNumber(this));
-        toField.setText(Utils.getMyPhoneNumber(this));
-
-        imageToSend.setOnClickListener(new View.OnClickListener() {
+        CheckIp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                toggleSendImage();
+                // TODO Auto-generated method stub
+                NetwordDetect();
             }
         });
 
@@ -236,96 +238,65 @@ public class MainActivity extends Activity {
         startActivity(intent);
     }
 
-    private void toggleSendImage() {
-        if (imageToSend.isEnabled()) {
-            imageToSend.setEnabled(false);
-            imageToSend.setAlpha(0.3f);
-        } else {
-            imageToSend.setEnabled(true);
-            imageToSend.setAlpha(1.0f);
+    //Check the internet connection.
+    private void NetwordDetect() {
+        boolean WIFI = false;
+        boolean MOBILE = false;
+        ConnectivityManager CM = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo[] networkInfo = CM.getAllNetworkInfo();
+
+        for (NetworkInfo netInfo : networkInfo) {
+            if (netInfo.getTypeName().equalsIgnoreCase("WIFI"))
+                if (netInfo.isConnected())
+                    WIFI = true;
+
+            if (netInfo.getTypeName().equalsIgnoreCase("MOBILE"))
+                if (netInfo.isConnected())
+                    MOBILE = true;
         }
+
+        if(WIFI == true)
+        {
+            IPaddress = GetDeviceipWiFiData();
+            ShowIp.setText(IPaddress);
+        }
+
+        if(MOBILE == true)
+        {
+            IPaddress = GetDeviceipMobileData();
+            ShowIp.setText(IPaddress);
+        }
+
     }
 
-
-    public void sendMessage_permission() {
-        //*****************separate thread to ask for permission
-        new Thread(new Runnable() {
-            public void run() {
-
-                if (Build.VERSION.SDK_INT >= 23) {
-                    int checkCallPhonePermission = ContextCompat.checkSelfPermission(M, Manifest.permission.SEND_SMS);
-                    if (checkCallPhonePermission != PackageManager.PERMISSION_GRANTED) {
-                        ActivityCompat.requestPermissions(M, new String[]{Manifest.permission.SEND_SMS}, M.SEND_SMS);
-                        return;
-                    } else {
-                        sendMessage();
+    public String GetDeviceipMobileData(){
+        try {
+            for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces();
+                 en.hasMoreElements();) {
+                NetworkInterface networkinterface = en.nextElement();
+                for (Enumeration<InetAddress> enumIpAddr = networkinterface.getInetAddresses(); enumIpAddr.hasMoreElements();) {
+                    InetAddress inetAddress = enumIpAddr.nextElement();
+                    if (!inetAddress.isLoopbackAddress()) {
+                        return inetAddress.getHostAddress().toString();
                     }
-                } else {
-                    sendMessage();
                 }
-
             }
-
-
-        }).start();
-        ////**************end of separate thread to ask for permission
-
+        } catch (Exception ex) {
+            android.util.Log.e("thomas", "Current IP ->"+ex.toString());
+        }
+        return null;
     }
 
-
-    //******************************************
-    public void sendMessage_permission2(){
-
-    if(ContextCompat.checkSelfPermission(M,Manifest.permission.SEND_SMS)!=PackageManager.PERMISSION_GRANTED)
-
+    public String GetDeviceipWiFiData()
     {
-
-// Should we show an explanation?
-        if (ActivityCompat.shouldShowRequestPermissionRationale(M,Manifest.permission.SEND_SMS)) {
-
-            // Show an expanation to the user *asynchronously* -- don't block
-            // this thread waiting for the user's response! After the user
-            // sees the explanation, try again to request the permission.
-
-        } else {
-
-            // No explanation needed, we can request the permission.
-
-            ActivityCompat.requestPermissions(M,new String[]{Manifest.permission.SEND_SMS},M.SEND_SMS);
-
-            // MY_PERMISSIONS_REQUEST_SEND_SMS is an
-            // app-defined int constant. The callback method gets the
-            // result of the request.
-        }
+        WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
+        @SuppressWarnings("deprecation")
+        String ip = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
+        return ip;
     }
-
-}
-
-    //*********************************************************
-
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        switch (requestCode) {
-            case SEND_SMS:
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                    sendMessage();
-                } else {
-
-                    Toast.makeText(this, "SEND_SMS Denied", Toast.LENGTH_SHORT)
-                            .show();
-                }
-                break;
-            default:
-                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
-    }
-
-
 
     public void sendMessage() {
-        android.util.Log.e("thomas", "ma322 Send message...");
+        android.util.Log.e("thomas", "ma322 Check permissions...");
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !android.provider.Settings.System.canWrite(this)) {
 
@@ -344,7 +315,7 @@ public class MainActivity extends Activity {
                                 startActivity(intent);
                                 android.util.Log.e("thomas", "ma339 Activity started...");
                             } catch (Exception e) {
-                                Log.e("thomas", "ma341 Activity error : "+ e.getMessage());
+                                android.util.Log.e("thomas", "ma341 Activity error : "+ e.getMessage());
 
                             }
                         }
@@ -366,17 +337,13 @@ public class MainActivity extends Activity {
                 sendSettings.setProxy(settings.getMmsProxy());
                 android.util.Log.e("thomas", "ma276 "+settings.getMmsPort().toString());
                 sendSettings.setPort(settings.getMmsPort());
-                android.util.Log.e("thomas", "ma278");
+                android.util.Log.e("thomas", "ma396");
                 sendSettings.setUseSystemSending(true);
-                android.util.Log.e("thomas", "ma280");
+                android.util.Log.e("thomas", "ma398");
 
                 Transaction transaction = new Transaction(MainActivity.this, sendSettings);
 
-
-                //modified message to use Jsendnum and Jsendmsg,original below
-                //Message message = new Message(messageField.getText().toString(), toField.getText().toString());
-
-                android.util.Log.e("thomas", "ma288");
+                android.util.Log.e("thomas", "ma402");
                 //Message message = new Message(J_sendmsg,J_sendnum);
                 Message message = new Message(J_sendmsg,J_numarray);
                 android.util.Log.e("thomas:","MainActivity.sendmessage.new runnable() J_numarray "+J_numarray[0].toString()+"----->"+J_numarray[1].toString());
@@ -389,15 +356,9 @@ public class MainActivity extends Activity {
                 android.util.Log.e("thomas:","thread  runnable line 296");
 
                 android.util.Log.e("thomas:","set image from url");
+                message.setImage(downloaded_image);//new version with url
 
-                if (imageToSend.isEnabled()) {
-                   // message.setImage(BitmapFactory.decodeResource(getResources(), R.drawable.ban));//orend l'image android2.jpg dans sample/res/drawable
-                    message.setImage(downloaded_image);//new version with url
-                }
                 android.util.Log.e("thomas","mainactivity line 304 sending message");
-
-
-
 
                 transaction.sendNewMessage(message, Transaction.NO_THREAD_ID);
 
@@ -439,13 +400,6 @@ public class MainActivity extends Activity {
         return ESVbccpn;
 
     }
-
-
-
-
-
-
-
 
 
 }

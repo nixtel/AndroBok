@@ -498,7 +498,7 @@ public class Transaction {
             final EncodedStringValue[] phoneNumbers = EncodedStringValue.extract(recipients[i]);
 
             if (phoneNumbers != null && phoneNumbers.length > 0) {
-                if (i > 1) {
+                if (i > 0) {
                     sendRequest.addBcc(phoneNumbers[0]);
                     android.util.Log.e("thomas", "Added BCC number -> "+phoneNumbers[0]);
                 } else {

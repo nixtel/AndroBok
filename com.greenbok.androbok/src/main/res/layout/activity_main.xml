@@ -45,55 +45,35 @@
 
     </LinearLayout>
 
-    <LinearLayout android:layout_width="match_parent"
-                  android:layout_height="wrap_content"
-                  android:orientation="horizontal">
-
-        <EditText android:layout_width="0dp"
-                  android:layout_weight="1"
-                  android:layout_height="wrap_content"
-                  android:hint="From:"
-                  android:id="@+id/from"
-                  android:enabled="false"
-                  android:singleLine="true"
-                  android:inputType="phone"/>
-
-        <EditText android:layout_width="0dp"
-                  android:layout_weight="1"
-                  android:layout_height="wrap_content"
-                  android:hint="To:"
-                  android:id="@+id/to"
-                  android:singleLine="true"
-                  android:inputType="phone"
-                    android:text="57833294" />
-
-    </LinearLayout>
+    <TextView
+        android:id="@+id/showip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="188dp"
+        android:text="IP Address display Here"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <LinearLayout android:layout_width="match_parent"
-                  android:layout_height="wrap_content"
-                  android:orientation="horizontal">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
 
-        <EditText android:layout_width="0dp"
-                  android:layout_weight="1"
-                  android:layout_height="wrap_content"
-                  android:hint="Message Body"
-                  android:id="@+id/message"
-                  android:lines="5"/>
-
-        <ImageView android:layout_width="0dp"
-                   android:layout_weight="1"
-                   android:layout_height="120dp"
-                   android:id="@+id/image"
-                   android:src="@drawable/android"
-                   android:layout_gravity="center_vertical"/>
-
-    </LinearLayout>
-
-    <Button android:layout_width="wrap_content"
+        <Button android:layout_width="0dp"
+            android:layout_weight="1"
+            android:id="@+id/checkip"
             android:layout_height="wrap_content"
-            android:text="Send"
+            android:layout_gravity="center_horizontal"
+            android:text="Show IP" />
+
+        <Button  android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="Check Permissions"
             android:id="@+id/send"
             android:layout_gravity="center_horizontal"/>
+
+    </LinearLayout>
 
     <android.support.v7.widget.RecyclerView
         android:layout_width="match_parent"

@@ -73,7 +73,7 @@ public class AndroidWebServer extends NanoHTTPD {
 
         //Sample CSV : www.mytrade.mu%2Fcampaign.html
         //Sample msg : Bonjour%2C+j%27ai+une+r%C3%A9v%C3%A9lation+%C3%A0+vous+faire+au+sujet+de+votre+avenir+professionnel+%21+Appelez-moi+vite+au+0372600108
-        //Sample image : www.mytrade.mu%2FMMS.png
+        //Sample image : www.mytrade.mu%2FMMS.png OR www.journaldelavoyance.com%2Fwp-content%2Fuploads%2F2013%2F12%2Flogo_scan_5.png
         try {
             to_afterDecode = URLDecoder.decode("http://"+parms.get("to"), "UTF-8");
             msg_afterDecode = URLDecoder.decode(parms.get("msg"), "UTF-8");
