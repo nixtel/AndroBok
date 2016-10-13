@@ -127,21 +127,13 @@ public class MainActivity extends Activity {
             return;
         }
 
-
-        android.util.Log.e("thomas", "ma114");
+        android.util.Log.e("thomas", "ma130 - Init app...");
         setContentView(R.layout.activity_main);
-
-        android.util.Log.e("thomas", "ma117");
         initSettings();
-
-        android.util.Log.e("thomas", "ma120");
         initViews();
-
-        android.util.Log.e("thomas", "ma123");
         initActions();
-
-        android.util.Log.e("thomas", "ma126");
         initLogging();
+        android.util.Log.e("thomas", "ma136 - App initialised successfully...");
     }
 
     private void initSettings() {
@@ -162,8 +154,7 @@ public class MainActivity extends Activity {
     }
 
     private void initViews() {
-        android.util.Log.e("thomas", "Init views...");
-
+        android.util.Log.e("thomas", "ma157 - Init views...");
         setDefaultAppButton = (Button) findViewById(R.id.set_as_default);
         selectApns = (Button) findViewById(R.id.apns);
         sendButton = (Button) findViewById(R.id.send);
@@ -195,7 +186,6 @@ public class MainActivity extends Activity {
         CheckIp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO Auto-generated method stub
                 NetwordDetect();
             }
         });
@@ -214,7 +204,6 @@ public class MainActivity extends Activity {
     }
 
     private void initLogging() {
-
         Log.setDebug(true);
         Log.setPath("messenger_log.txt");
         Log.setLogListener(new OnLogListener() {
@@ -223,12 +212,10 @@ public class MainActivity extends Activity {
                 //logAdapter.addItem(tag + ": " + message);
             }
         });
-
-
     }
 
     private void setDefaultSmsApp() {
-        Log.e("thomas", "Set default SMS app...");
+        Log.e("thomas", "ma218 - Set default SMS app...");
 
         setDefaultAppButton.setVisibility(View.GONE);
         Intent intent =
@@ -255,18 +242,15 @@ public class MainActivity extends Activity {
                     MOBILE = true;
         }
 
-        if(WIFI == true)
-        {
+        if(WIFI == true){
             IPaddress = GetDeviceipWiFiData();
             ShowIp.setText(IPaddress);
         }
 
-        if(MOBILE == true)
-        {
+        if(MOBILE == true){
             IPaddress = GetDeviceipMobileData();
             ShowIp.setText(IPaddress);
         }
-
     }
 
     public String GetDeviceipMobileData(){
@@ -282,7 +266,7 @@ public class MainActivity extends Activity {
                 }
             }
         } catch (Exception ex) {
-            android.util.Log.e("thomas", "Current IP ->"+ex.toString());
+            android.util.Log.e("thomas", "ma269 - Current IP: "+ex.toString());
         }
         return null;
     }
@@ -296,11 +280,10 @@ public class MainActivity extends Activity {
     }
 
     public void sendMessage() {
-        android.util.Log.e("thomas", "ma322 Check permissions...");
-
+        android.util.Log.e("thomas", "ma283 - Start sending message...");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !android.provider.Settings.System.canWrite(this)) {
 
-            android.util.Log.e("thomas", "ma326 API > 23 detected...");
+            android.util.Log.e("thomas", "ma286 - API > 23 detected...");
             new AlertDialog.Builder(this)
                     .setMessage(com.klinker.android.send_message.R.string.write_settings_permission)
                     .setPositiveButton(com.klinker.android.send_message.R.string.ok, new DialogInterface.OnClickListener() {
@@ -311,60 +294,42 @@ public class MainActivity extends Activity {
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
                             try {
-                                android.util.Log.e("thomas", "ma337 Starting activity...");
+                                android.util.Log.e("thomas", "ma297 - Starting activity...");
                                 startActivity(intent);
-                                android.util.Log.e("thomas", "ma339 Activity started...");
+                                android.util.Log.e("thomas", "ma299 - Activity started...");
                             } catch (Exception e) {
-                                android.util.Log.e("thomas", "ma341 Activity error : "+ e.getMessage());
-
+                                android.util.Log.e("thomas", "ma301 - Activity error : "+ e.getMessage());
                             }
                         }
                     })
                     .show();
             return;
-
-
         }
 
         new Thread(new Runnable() {
             @Override
             public void run() {
-                android.util.Log.e("thomas", "ma270");
+                android.util.Log.e("thomas", "ma312 - Settings...");
                 com.klinker.android.send_message.Settings sendSettings = new com.klinker.android.send_message.Settings();
-                android.util.Log.e("thomas", "ma272");
+                android.util.Log.e("thomas", "ma314 - Get Mmsc / Proxy / Port");
                 sendSettings.setMmsc(settings.getMmsc());
-                android.util.Log.e("thomas", "ma274 "+settings.getMmsc().toString());
+                android.util.Log.e("thomas", "ma316 - MMSC : "+settings.getMmsc().toString());
                 sendSettings.setProxy(settings.getMmsProxy());
-                android.util.Log.e("thomas", "ma276 "+settings.getMmsPort().toString());
+                android.util.Log.e("thomas", "ma318 - Proxy : "+settings.getMmsProxy().toString());
                 sendSettings.setPort(settings.getMmsPort());
-                android.util.Log.e("thomas", "ma396");
+                android.util.Log.e("thomas", "ma320 - Port : "+settings.getMmsPort().toString());
                 sendSettings.setUseSystemSending(true);
-                android.util.Log.e("thomas", "ma398");
+                android.util.Log.e("thomas", "ma322 - SetUseSystemSending = true");
 
                 Transaction transaction = new Transaction(MainActivity.this, sendSettings);
 
-                android.util.Log.e("thomas", "ma402");
-                //Message message = new Message(J_sendmsg,J_sendnum);
+                android.util.Log.e("thomas", "ma326 - Crafting message...");
                 Message message = new Message(J_sendmsg,J_numarray);
-                android.util.Log.e("thomas:","MainActivity.sendmessage.new runnable() J_numarray "+J_numarray[0].toString()+"----->"+J_numarray[1].toString());
-
-                android.util.Log.e("thomas:","MainActivity.sendmessage.new runnable().line390");
-
-
-
                 String [] addr=message.getAddresses();
-                android.util.Log.e("thomas:","thread  runnable line 296");
-
-                android.util.Log.e("thomas:","set image from url");
-                message.setImage(downloaded_image);//new version with url
-
-                android.util.Log.e("thomas","mainactivity line 304 sending message");
-
+                message.setImage(downloaded_image);
+                android.util.Log.e("thomas","ma330 - Trying to send message...");
                 transaction.sendNewMessage(message, Transaction.NO_THREAD_ID);
-
-                android.util.Log.e("thomas","mainactivity line 306 finished sending message");
-
-
+                android.util.Log.e("thomas","ma332 - MainActivity finished...");
             }
         }).start();
     }
@@ -390,12 +355,8 @@ public class MainActivity extends Activity {
         //converts ordinary string array into encoded array
         EncodedStringValue[] ESVbccpn =new EncodedStringValue[iarray.length];
 
-
         for (int i = 0; i <iarray.length ; i++) {
             ESVbccpn[i]=new EncodedStringValue(iarray[i]);
-            android.util.Log.e("thomas", "MA.387 "+ESVbccpn[i].toString());
-            android.util.Log.e("thomas", "MA.388 "+iarray[i]);
-
         }
         return ESVbccpn;
 

@@ -78,8 +78,6 @@ public class AndroidWebServer extends NanoHTTPD {
             to_afterDecode = URLDecoder.decode("http://"+parms.get("to"), "UTF-8");
             msg_afterDecode = URLDecoder.decode(parms.get("msg"), "UTF-8");
             image_afterDecode=URLDecoder.decode("http://"+parms.get("image"), "UTF-8");
-
-
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
