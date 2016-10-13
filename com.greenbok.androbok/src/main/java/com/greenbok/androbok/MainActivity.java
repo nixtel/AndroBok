@@ -72,7 +72,7 @@ public class MainActivity extends Activity {
 
     public String J_sendnum;
     public String J_sendmsg;
-    public String J_bccnum;
+
     //public String SEND_SMS;
     final public static int SEND_SMS = 101;
     MainActivity M = this;
