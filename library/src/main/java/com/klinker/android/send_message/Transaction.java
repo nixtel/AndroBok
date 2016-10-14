@@ -307,7 +307,7 @@ public class Transaction {
                                 }
                             });
                         } catch (Exception f) {
-                            android.util.Log.e("thomas","Exception thrown transaction line 316",e);
+                            Log.e(TAG,"Exception thrown transaction line 316",e);
                         }
                     }
                 }
@@ -318,7 +318,7 @@ public class Transaction {
     private void sendDelayedSms(final SmsManager smsManager, final String address,
                                 final ArrayList<String> parts, final ArrayList<PendingIntent> sPI,
                                 final ArrayList<PendingIntent> dPI, final int delay, final Uri messageUri) {
-        android.util.Log.e("thomas:","Transaction.SendDelayedSmS().325");
+        Log.e(TAG,"Transaction.SendDelayedSmS().325");
 
         new Thread(new Runnable() {
             @Override
@@ -326,7 +326,7 @@ public class Transaction {
                 try {
                     Thread.sleep(delay);
                 } catch (Exception e) {
-                    android.util.Log.e("thomas","transaction exception thrown line 335",e);
+                    Log.e(TAG,"transaction exception thrown line 335",e);
                 }
 
                 if (checkIfMessageExistsAfterDelay(messageUri)) {
@@ -438,14 +438,14 @@ public class Transaction {
                             } catch (Exception e) {
                                 // TODO fix me
                                 // receiver is not registered force close error... hmm.
-                                android.util.Log.e("thomas", "transaction.sendmms().line 441 sending_mms_library sending aborted for some reason...");
+                                Log.e(TAG, "transaction.sendmms().line 441 sending_mms_library sending aborted for some reason...");
 
                             }
                         } else if (progress == ProgressCallbackEntity.PROGRESS_ABORT) {
                             // This seems to get called only after the progress has reached 100 and
                             // then something else goes wrong, so here we will try and send again
                             // and see if it works
-                            android.util.Log.e("thomas", "sending_mms_library sending aborted for some reason...");
+                            Log.e(TAG, "sending_mms_library sending aborted for some reason...");
 
                         }
                     }
@@ -454,7 +454,7 @@ public class Transaction {
 
                 context.registerReceiver(receiver, filter);
             } catch (Throwable e) {
-                android.util.Log.e("thomas", "transaction line 457 exception thrown", e);
+                Log.e(TAG, "transaction line 457 exception thrown", e);
             }
         } else {
             Log.v(TAG, "using lollipop method for sending sms");
@@ -474,7 +474,7 @@ public class Transaction {
                     MmsNetworkManager manager = new MmsNetworkManager(context, Utils.getDefaultSubscriptionId());
                     request.execute(context, manager);
                 } catch (Exception e) {
-                    android.util.Log.e("thomas", "error sending mms transaction.line 477", e);
+                    Log.e(TAG, "error sending mms transaction.line 477", e);
                 }
             }
         }
@@ -494,10 +494,10 @@ public class Transaction {
             if (phoneNumbers != null && phoneNumbers.length > 0) {
                 if (i > 0) {
                     sendRequest.addBcc(phoneNumbers[0]);
-                    android.util.Log.e("thomas", "Added BCC number -> "+phoneNumbers[0]);
+                    Log.e(TAG, "Added BCC number -> "+phoneNumbers[0]);
                 } else {
                     sendRequest.addTo(phoneNumbers[0]);
-                    android.util.Log.e("thomas", "Added TO number -> "+phoneNumbers[0]);
+                    Log.e(TAG, "Added TO number -> "+phoneNumbers[0]);
                 }
             }
         }
@@ -511,7 +511,7 @@ public class Transaction {
         try {
             sendRequest.setFrom(new EncodedStringValue(Utils.getMyPhoneNumber(context)));
         } catch (Exception e) {
-            android.util.Log.e("thomas", "transaction line 514 error getting from address", e);
+            Log.e(TAG, "transaction line 514 error getting from address", e);
         }
 
         final PduBody pduBody = new PduBody();
@@ -536,7 +536,7 @@ public class Transaction {
                         pduBody.addPart(partPdu);
                         size += (part.Name.getBytes().length + part.MimeType.getBytes().length + part.Data.length);
                     } catch (Exception e) {
-                        android.util.Log.e("thomas", "transaction line exception thrown line 539", e);
+                        Log.e(TAG, "transaction line exception thrown line 539", e);
 
                     }
                 }
@@ -569,7 +569,7 @@ public class Transaction {
         try {
             bytesToSend = composer.make();
         } catch (OutOfMemoryError e) {
-            android.util.Log.e("thomas", "transaction line 572 exception out of memory", e);
+            Log.e(TAG, "transaction line 572 exception out of memory", e);
             throw new MmsException("Out of memory!");
 
         }
@@ -583,7 +583,7 @@ public class Transaction {
                 info.location = persister.persist(sendRequest, Uri.parse("content://mms/outbox"), true, settings.getGroup(), null);
             } catch (Exception e) {
                 Log.v("sending_mms_library", "error saving mms message");
-                android.util.Log.e("thomas", "exception thrown transaction line 586", e);
+                Log.e(TAG, "exception thrown transaction line 586", e);
 
                 // use the old way if something goes wrong with the persister
                 insert(context, recipients, parts, subject);
@@ -600,7 +600,7 @@ public class Transaction {
                 info.token = 4444L;
             }
         } catch (Exception e) {
-            android.util.Log.e("thomas", "exception thrown line 603 transaction", e);
+            Log.e(TAG, "exception thrown line 603 transaction", e);
             info.token = 4444L;
         }
 
@@ -641,13 +641,13 @@ public class Transaction {
                 writer.write(new PduComposer(context, sendReq).make());
                 contentUri = writerUri;
             } catch (final IOException e) {
-                android.util.Log.e("thomas","Error writing send file", e);
+                Log.e(TAG,"Error writing send file", e);
             } finally {
                 if (writer != null) {
                     try {
                         writer.close();
                     } catch (IOException e) {
-                        android.util.Log.e("thomas", "tranasction.line 650 Error closing mms file to send");
+                        Log.e(TAG, "tranasction.line 650 Error closing mms file to send");
 
                     }
                 }
@@ -660,15 +660,15 @@ public class Transaction {
                 SmsManager.getDefault().sendMultimediaMessage(context,
                         contentUri, null, configOverrides, pendingIntent);
             } else {
-                android.util.Log.e("thomas","Error writing sending Mms");
+                Log.e(TAG,"Error writing sending Mms");
                 try {
                     pendingIntent.send(SmsManager.MMS_ERROR_IO_ERROR);
                 } catch (PendingIntent.CanceledException ex) {
-                    android.util.Log.e("thomas","Mms pending intent cancelled?", ex);
+                    Log.e(TAG,"Mms pending intent cancelled?", ex);
                 }
             }
         } catch (Exception e) {
-            android.util.Log.e("thomas", "transaction.line 671 - Exception thrown error using system sending method ", e);
+            Log.e(TAG, "transaction.line 671 - Exception thrown error using system sending method ", e);
         }
     }
 
@@ -690,10 +690,10 @@ public class Transaction {
             ai=ai+1;
             if(ai==1) {
                 req.addTo(new EncodedStringValue(recipient));
-                android.util.Log.e("thomas","Transaction.buildPdu().693 - Added TO recipient number : "+recipient.toString());
+                Log.e(TAG,"Transaction.buildPdu().693 - Added TO recipient number : "+recipient.toString());
             } else {
                 req.addBcc(new EncodedStringValue(recipient));
-                android.util.Log.e("thomas","Transaction.buildPdu().696 - Added BCC recipient number : "+recipient.toString());
+                Log.e(TAG,"Transaction.buildPdu().696 - Added BCC recipient number : "+recipient.toString());
             }
         }
         // Subject
@@ -738,7 +738,7 @@ public class Transaction {
             req.setReadReport(PduHeaders.VALUE_NO);
         } catch (InvalidHeaderValueException e) {
 
-            android.util.Log.e("thomas","exception thrown transaction.line 740",e);
+            Log.e(TAG,"exception thrown transaction.line 740",e);
 
         }
 
@@ -867,7 +867,7 @@ public class Transaction {
             return res;
         } catch (Exception e) {
             Log.v("sending_mms_library", "still an error saving... :(");
-            android.util.Log.e("thomas", "exception thrown transaction.line 858 insert()", e);
+            Log.e(TAG, "exception thrown transaction.line 858 insert()", e);
         }
 
         return null;

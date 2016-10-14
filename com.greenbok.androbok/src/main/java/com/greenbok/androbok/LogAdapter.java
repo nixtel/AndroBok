@@ -24,6 +24,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.graphics.Color;
 
 import java.util.List;
 
@@ -93,7 +94,8 @@ public class LogAdapter extends RecyclerView.Adapter<LogAdapter.ViewHolder> {
         public ViewHolder(TextView v) {
             super(v);
             mTextView = v;
-            mTextView.setTextSize(10);
+            mTextView.setTextSize(8);
+            mTextView.setTextColor(Color.parseColor("#586E75"));
         }
     }
 

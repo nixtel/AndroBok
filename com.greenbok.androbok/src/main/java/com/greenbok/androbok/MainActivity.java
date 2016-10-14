@@ -21,31 +21,31 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Telephony;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.telephony.SmsManager;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.Toast;
+import android.os.Handler;
+
+import android.util.DisplayMetrics;
+import android.view.Display;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
+import android.widget.TableLayout;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.text.format.Formatter;
-//import android.util.Log;
 import android.widget.TextView;
 
 import com.google.android.mms.pdu_alt.EncodedStringValue;
@@ -78,8 +78,7 @@ public class MainActivity extends Activity {
 
     private LogAdapter logAdapter;
 
-    AndroidWebServer androidWebServer;
-
+    private AndroidWebServer androidWebServer;
 
     public String J_sendnum;
     public String J_sendmsg;
@@ -92,30 +91,24 @@ public class MainActivity extends Activity {
     MainActivity M = this;
     public Transaction Mtrans;
     Bitmap downloaded_image;
-
-
-
-
-
-
-
+    private static final String TAG = "Main";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        android.util.Log.e("thomas", "ma75 oncreate");
+        Log.e(TAG, "Oncreate started...");
         super.onCreate(savedInstanceState);
 
 
         //System.out.println(response);
         try {
-            Log.w("thomas", "ma 96 start server");
+            Log.v(TAG, "Launching Web server...");
             androidWebServer = new AndroidWebServer(8900, this);
             androidWebServer.start();
-            android.util.Log.e("thomas", "ma99 server started on port 8900");
+            Log.v(TAG, "ma105 - Web server started on localport 8900");
 
         } catch (IOException e) {
             e.printStackTrace();
-            android.util.Log.e("thomas", "error ma102 " + e.getMessage());
+            Log.v(TAG, "Web server or LogWatcher error - ma109 " + e.getMessage());
         }
 
 
@@ -127,13 +120,14 @@ public class MainActivity extends Activity {
             return;
         }
 
-        android.util.Log.e("thomas", "ma130 - Init app...");
+        Log.v(TAG, "ma121 - Init app...");
         setContentView(R.layout.activity_main);
         initSettings();
         initViews();
         initActions();
         initLogging();
-        android.util.Log.e("thomas", "ma136 - App initialised successfully...");
+        Log.v(TAG, "Logging activated...");
+        Log.v(TAG, "App initialised successfully...");
     }
 
     private void initSettings() {
@@ -154,7 +148,7 @@ public class MainActivity extends Activity {
     }
 
     private void initViews() {
-        android.util.Log.e("thomas", "ma157 - Init views...");
+        Log.v(TAG, "Init views...");
         setDefaultAppButton = (Button) findViewById(R.id.set_as_default);
         selectApns = (Button) findViewById(R.id.apns);
         sendButton = (Button) findViewById(R.id.send);
@@ -205,13 +199,45 @@ public class MainActivity extends Activity {
 
     private void initLogging() {
         Log.setDebug(true);
-        Log.setPath("messenger_log.txt");
+        Log.setPath("androbok.log");
         Log.setLogListener(new OnLogListener() {
             @Override
             public void onLogged(String tag, String message) {
-                //logAdapter.addItem(tag + ": " + message);
+                logAdapter.addItem(tag + ": " + message);
             }
         });
+
+        /**
+         *
+        Log.v(TAG, "ma106 - Launching InApp Logs...");
+        // get scaledDensity
+        Display display = getWindowManager().getDefaultDisplay();
+        DisplayMetrics metrics = new DisplayMetrics();
+        display.getMetrics(metrics);
+        float scaledDensity = metrics.scaledDensity;
+
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+
+        TextView text = new TextView(this);
+        layout.addView(text);
+        text.setText("AndroBok Log Viewer");
+        // for metrics table
+        ScrollView scroll = new ScrollView(this);
+        TableLayout table = new TableLayout(this);
+        scroll.addView(table);
+        layout.addView(scroll);
+
+        setContentView(layout);
+
+        // log watcher
+        logWatcher = new LogWatcher(handler, table);
+        logWatcher.start();
+        Thread th = new Thread(logWatcher);
+        th.start();
+        /**
+         */
+
     }
 
     private void setDefaultSmsApp() {
@@ -266,7 +292,7 @@ public class MainActivity extends Activity {
                 }
             }
         } catch (Exception ex) {
-            android.util.Log.e("thomas", "ma269 - Current IP: "+ex.toString());
+            Log.v(TAG, "Current IP: "+ex.toString());
         }
         return null;
     }
@@ -280,10 +306,10 @@ public class MainActivity extends Activity {
     }
 
     public void sendMessage() {
-        android.util.Log.e("thomas", "ma283 - Start sending message...");
+        Log.v(TAG, "Start sending message...");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !android.provider.Settings.System.canWrite(this)) {
 
-            android.util.Log.e("thomas", "ma286 - API > 23 detected...");
+            Log.v(TAG, "API > 23 detected...");
             new AlertDialog.Builder(this)
                     .setMessage(com.klinker.android.send_message.R.string.write_settings_permission)
                     .setPositiveButton(com.klinker.android.send_message.R.string.ok, new DialogInterface.OnClickListener() {
@@ -294,11 +320,11 @@ public class MainActivity extends Activity {
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
                             try {
-                                android.util.Log.e("thomas", "ma297 - Starting activity...");
+                                Log.v(TAG, "Starting activity...");
                                 startActivity(intent);
-                                android.util.Log.e("thomas", "ma299 - Activity started...");
+                                Log.v(TAG, "Activity started...");
                             } catch (Exception e) {
-                                android.util.Log.e("thomas", "ma301 - Activity error : "+ e.getMessage());
+                                Log.v(TAG, "Activity error : "+ e.getMessage());
                             }
                         }
                     })
@@ -309,27 +335,27 @@ public class MainActivity extends Activity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                android.util.Log.e("thomas", "ma312 - Settings...");
+                Log.v(TAG, "Init Settings...");
                 com.klinker.android.send_message.Settings sendSettings = new com.klinker.android.send_message.Settings();
-                android.util.Log.e("thomas", "ma314 - Get Mmsc / Proxy / Port");
+                Log.v(TAG, "Get Mmsc / Proxy / Port");
                 sendSettings.setMmsc(settings.getMmsc());
-                android.util.Log.e("thomas", "ma316 - MMSC : "+settings.getMmsc().toString());
+                Log.v(TAG, "MMSC : "+settings.getMmsc().toString());
                 sendSettings.setProxy(settings.getMmsProxy());
-                android.util.Log.e("thomas", "ma318 - Proxy : "+settings.getMmsProxy().toString());
+                Log.v(TAG, "Proxy : "+settings.getMmsProxy().toString());
                 sendSettings.setPort(settings.getMmsPort());
-                android.util.Log.e("thomas", "ma320 - Port : "+settings.getMmsPort().toString());
+                Log.v(TAG, "Port : "+settings.getMmsPort().toString());
                 sendSettings.setUseSystemSending(true);
-                android.util.Log.e("thomas", "ma322 - SetUseSystemSending = true");
+                Log.v(TAG, "SetUseSystemSending = true");
 
                 Transaction transaction = new Transaction(MainActivity.this, sendSettings);
 
-                android.util.Log.e("thomas", "ma326 - Crafting message...");
+                Log.v(TAG, "Crafting message...");
                 Message message = new Message(J_sendmsg,J_numarray);
                 String [] addr=message.getAddresses();
                 message.setImage(downloaded_image);
-                android.util.Log.e("thomas","ma330 - Trying to send message...");
+                Log.v(TAG,"Trying to send message...");
                 transaction.sendNewMessage(message, Transaction.NO_THREAD_ID);
-                android.util.Log.e("thomas","ma332 - MainActivity finished...");
+                Log.v(TAG,"MainActivity finished...");
             }
         }).start();
     }
@@ -364,3 +390,4 @@ public class MainActivity extends Activity {
 
 
 }
+
