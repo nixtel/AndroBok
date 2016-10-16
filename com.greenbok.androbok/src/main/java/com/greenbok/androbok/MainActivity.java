@@ -95,20 +95,20 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.e(TAG, "Oncreate started...");
+        android.util.Log.e(TAG, "Oncreate started...");
         super.onCreate(savedInstanceState);
 
 
         //System.out.println(response);
         try {
-            Log.v(TAG, "Launching Web server...");
+            android.util.Log.v(TAG, "Launching Web server...");
             androidWebServer = new AndroidWebServer(8900, this);
             androidWebServer.start();
-            Log.v(TAG, "ma105 - Web server started on localport 8900");
+            android.util.Log.v(TAG, "ma105 - Web server started on localport 8900");
 
         } catch (IOException e) {
             e.printStackTrace();
-            Log.v(TAG, "Web server or LogWatcher error - ma109 " + e.getMessage());
+            android.util.Log.v(TAG, "Web server or LogWatcher error - ma109 " + e.getMessage());
         }
 
 
@@ -120,14 +120,14 @@ public class MainActivity extends Activity {
             return;
         }
 
-        Log.v(TAG, "ma121 - Init app...");
+        android.util.Log.v(TAG, "ma121 - Init app...");
         setContentView(R.layout.activity_main);
         initSettings();
         initViews();
         initActions();
         initLogging();
-        Log.v(TAG, "Logging activated...");
-        Log.v(TAG, "App initialised successfully...");
+        android.util.Log.v(TAG, "Logging activated...");
+        android.util.Log.v(TAG, "App initialised successfully...");
     }
 
     private void initSettings() {
@@ -148,7 +148,7 @@ public class MainActivity extends Activity {
     }
 
     private void initViews() {
-        Log.v(TAG, "Init views...");
+        android.util.Log.v(TAG, "Init views...");
         setDefaultAppButton = (Button) findViewById(R.id.set_as_default);
         selectApns = (Button) findViewById(R.id.apns);
         sendButton = (Button) findViewById(R.id.send);
@@ -203,40 +203,9 @@ public class MainActivity extends Activity {
         Log.setLogListener(new OnLogListener() {
             @Override
             public void onLogged(String tag, String message) {
-                logAdapter.addItem(tag + ": " + message);
+                //logAdapter.addItem("[" + tag + "] " + message);
             }
         });
-
-        /**
-         *
-        Log.v(TAG, "ma106 - Launching InApp Logs...");
-        // get scaledDensity
-        Display display = getWindowManager().getDefaultDisplay();
-        DisplayMetrics metrics = new DisplayMetrics();
-        display.getMetrics(metrics);
-        float scaledDensity = metrics.scaledDensity;
-
-        LinearLayout layout = new LinearLayout(this);
-        layout.setOrientation(LinearLayout.VERTICAL);
-
-        TextView text = new TextView(this);
-        layout.addView(text);
-        text.setText("AndroBok Log Viewer");
-        // for metrics table
-        ScrollView scroll = new ScrollView(this);
-        TableLayout table = new TableLayout(this);
-        scroll.addView(table);
-        layout.addView(scroll);
-
-        setContentView(layout);
-
-        // log watcher
-        logWatcher = new LogWatcher(handler, table);
-        logWatcher.start();
-        Thread th = new Thread(logWatcher);
-        th.start();
-        /**
-         */
 
     }
 
@@ -268,12 +237,12 @@ public class MainActivity extends Activity {
                     MOBILE = true;
         }
 
-        if(WIFI == true){
+        if(WIFI){
             IPaddress = GetDeviceipWiFiData();
             ShowIp.setText(IPaddress);
         }
 
-        if(MOBILE == true){
+        if(MOBILE){
             IPaddress = GetDeviceipMobileData();
             ShowIp.setText(IPaddress);
         }
@@ -292,7 +261,7 @@ public class MainActivity extends Activity {
                 }
             }
         } catch (Exception ex) {
-            Log.v(TAG, "Current IP: "+ex.toString());
+            android.util.Log.v(TAG, "Current IP: "+ex.toString());
         }
         return null;
     }
@@ -306,10 +275,10 @@ public class MainActivity extends Activity {
     }
 
     public void sendMessage() {
-        Log.v(TAG, "Start sending message...");
+        android.util.Log.v(TAG, "Start sending message...");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !android.provider.Settings.System.canWrite(this)) {
 
-            Log.v(TAG, "API > 23 detected...");
+            android.util.Log.v(TAG, "API > 23 detected...");
             new AlertDialog.Builder(this)
                     .setMessage(com.klinker.android.send_message.R.string.write_settings_permission)
                     .setPositiveButton(com.klinker.android.send_message.R.string.ok, new DialogInterface.OnClickListener() {
@@ -320,11 +289,11 @@ public class MainActivity extends Activity {
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
                             try {
-                                Log.v(TAG, "Starting activity...");
+                                android.util.Log.v(TAG, "Starting activity...");
                                 startActivity(intent);
-                                Log.v(TAG, "Activity started...");
+                                android.util.Log.v(TAG, "Activity started...");
                             } catch (Exception e) {
-                                Log.v(TAG, "Activity error : "+ e.getMessage());
+                                android.util.Log.v(TAG, "Activity error : "+ e.getMessage());
                             }
                         }
                     })
@@ -335,27 +304,27 @@ public class MainActivity extends Activity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                Log.v(TAG, "Init Settings...");
+                android.util.Log.v(TAG, "Init Settings...");
                 com.klinker.android.send_message.Settings sendSettings = new com.klinker.android.send_message.Settings();
-                Log.v(TAG, "Get Mmsc / Proxy / Port");
+                android.util.Log.v(TAG, "Get Mmsc / Proxy / Port");
                 sendSettings.setMmsc(settings.getMmsc());
-                Log.v(TAG, "MMSC : "+settings.getMmsc().toString());
+                android.util.Log.v(TAG, "MMSC : "+settings.getMmsc().toString());
                 sendSettings.setProxy(settings.getMmsProxy());
-                Log.v(TAG, "Proxy : "+settings.getMmsProxy().toString());
+                android.util.Log.v(TAG, "Proxy : "+settings.getMmsProxy().toString());
                 sendSettings.setPort(settings.getMmsPort());
-                Log.v(TAG, "Port : "+settings.getMmsPort().toString());
+                android.util.Log.v(TAG, "Port : "+settings.getMmsPort().toString());
                 sendSettings.setUseSystemSending(true);
-                Log.v(TAG, "SetUseSystemSending = true");
+                android.util.Log.v(TAG, "SetUseSystemSending = true");
 
                 Transaction transaction = new Transaction(MainActivity.this, sendSettings);
 
-                Log.v(TAG, "Crafting message...");
+                android.util.Log.v(TAG, "Crafting message...");
                 Message message = new Message(J_sendmsg,J_numarray);
                 String [] addr=message.getAddresses();
                 message.setImage(downloaded_image);
-                Log.v(TAG,"Trying to send message...");
+                android.util.Log.v(TAG,"Trying to send message...");
                 transaction.sendNewMessage(message, Transaction.NO_THREAD_ID);
-                Log.v(TAG,"MainActivity finished...");
+                android.util.Log.v(TAG,"MainActivity finished...");
             }
         }).start();
     }

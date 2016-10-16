@@ -73,20 +73,16 @@
             android:layout_gravity="center_horizontal"/>
 
     </LinearLayout>
-    <ScrollView android:layout_width="fill_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/log"
-            android:scrollbars="vertical"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:background="#002b36"
-            android:gravity="center"
-            android:textColor="#586e75"
-            android:lineSpacingExtra="-5dp" />
-    </ScrollView>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/log"
+        android:scrollbars="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#002b36"
+        android:gravity="center"
+        android:textColor="#586e75"
+        android:layout_marginTop="-10dp"  />
 
 
 </LinearLayout>

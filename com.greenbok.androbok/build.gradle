@@ -44,8 +44,9 @@ android {
 
 dependencies {
     compile project(':library')
-    compile 'com.android.support:recyclerview-v7:24.2.0'
+    compile 'com.android.support:recyclerview-v7:24.2.1'
     compile 'org.nanohttpd:nanohttpd:2.2.0'
     compile 'com.squareup.okhttp3:okhttp:3.4.1'
     compile 'com.loopj.android:android-async-http:1.4.9'
+    provided fileTree(dir: 'libs', include: ['*.jar'])
 }
